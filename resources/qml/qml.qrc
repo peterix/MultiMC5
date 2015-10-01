@@ -1,0 +1,11 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+	<qresource prefix="/qml">
+		<file>technic/technic.qml</file>
+		<file>technic/close.svg</file>
+		<file>technic/install.svg</file>
+		<file>technic/default_logo.png</file>
+		<file>technic/default_background.jpg</file>
+		<file>ScrollBar.qml</file>
+	</qresource>
+</RCC>
