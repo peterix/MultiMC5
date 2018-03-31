@@ -54,8 +54,13 @@ QList< InstanceId > FolderInstanceProvider::discoverInstances()
 	{
 		QString subDir = iter.next();
 		QFileInfo dirInfo(subDir);
+		auto id = dirInfo.fileName();
 		if (!QFileInfo(FS::PathCombine(subDir, "instance.cfg")).exists())
 			continue;
+		if (id == "_MMC_TEMP" || id == "_MMC_TRASH")
+		{
+			continue;
+		}
 		// if it is a symlink, ignore it if it goes to the instance folder
 		if(dirInfo.isSymLink())
 		{
@@ -67,7 +72,6 @@ QList< InstanceId > FolderInstanceProvider::discoverInstances()
 				continue;
 			}
 		}
-		auto id = dirInfo.fileName();
 		out.append(id);
 		qDebug() << "Found instance ID" << id;
 	}
@@ -457,6 +461,35 @@ bool FolderInstanceProvider::commitStagedInstance(const QString& path, const QSt
 bool FolderInstanceProvider::destroyStagingPath(const QString& keyPath)
 {
 	return FS::deletePath(keyPath);
+}
+
+bool FolderInstanceProvider::deleteInstance(const InstanceId& id)
+{
+	QDir rootPath(m_instDir);
+	auto path = FS::PathCombine(m_instDir, "_MMC_TRASH");
+	if(!rootPath.mkpath("_MMC_TRASH"))
+	{
+		qWarning() << "Could not create trash folder" << path;
+		return false;
+	}
+	return QFile::rename(FS::PathCombine(m_instDir, id), FS::PathCombine(m_instDir, "_MMC_TRASH", id));
+}
+
+QList<TrashEntry> FolderInstanceProvider::trash() const
+{
+	QList<TrashEntry> out;
+	QString trashPath = FS::PathCombine(m_instDir, "_MMC_TRASH");
+	QDirIterator iter(trashPath, QDir::Dirs | QDir::Files | QDir::NoDot | QDir::NoDotDot | QDir::Readable | QDir::Hidden, QDirIterator::FollowSymlinks);
+	while (iter.hasNext())
+	{
+		QString item = iter.next();
+		TrashEntry entry;
+		entry.name = item;
+		entry.originalName = item;
+		entry.deletedOn = QDateTime::currentDateTime();
+		out.append(entry);
+	}
+	return out;
 }
 
 #include "FolderInstanceProvider.moc"

@@ -19,6 +19,13 @@ enum class InstCreateError
 	CantCreateDir
 };
 
+struct TrashEntry
+{
+	QString name;
+	QString originalName;
+	QDateTime deletedOn;
+};
+
 class MULTIMC_LOGIC_EXPORT BaseInstanceProvider : public QObject
 {
 	Q_OBJECT
@@ -44,6 +51,18 @@ public:
 	virtual bool destroyStagingPath(const QString & path)
 	{
 		return true;
+	}
+	virtual bool deleteInstance(const InstanceId & id)
+	{
+		return false;
+	}
+	virtual bool supportsTrash() const
+	{
+		return false;
+	}
+	virtual QList<TrashEntry> trash() const
+	{
+		return {};
 	}
 
 signals:

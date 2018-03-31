@@ -25,6 +25,7 @@
 
 #include "FileSystem.h"
 #include "Commandline.h"
+#include "BaseInstanceProvider.h"
 
 BaseInstance::BaseInstance(SettingsObjectPtr globalSettings, SettingsObjectPtr settings, const QString &rootDir)
 	: QObject()
@@ -104,9 +105,15 @@ void BaseInstance::invalidate()
 
 void BaseInstance::nuke()
 {
-	changeStatus(Status::Gone);
-	qDebug() << "Instance" << id() << "has been deleted by MultiMC.";
-	FS::deletePath(instanceRoot());
+	if(m_provider->deleteInstance(id()))
+	{
+		changeStatus(Status::Gone);
+		qDebug() << "Instance" << id() << "has been deleted by MultiMC.";
+	}
+	else
+	{
+		// TODO: show some sort of error?
+	}
 }
 
 void BaseInstance::changeStatus(BaseInstance::Status newStatus)
